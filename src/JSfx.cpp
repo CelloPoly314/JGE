@@ -1,9 +1,3 @@
-/*******************************************************
- * 
- * Copyright (C) 2019 Francesco Pham (pham.francesco@gmail.com)
- * 
- *******************************************************/
-
 #include "../include/JSoundSystem.h"
 
 JMusic::JMusic()

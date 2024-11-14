@@ -20,7 +20,7 @@ uniform vec2 textureSize;
 
 uniform mat4 model; 
 uniform mat4 projection;
-uniform bvec2 flipped;
+uniform ivec2 flipped;
 
 //the varying statement tells the shader pipeline that this variable
 //has to be passed on to the next stage (so the fragment shader)

@@ -1,15 +1,11 @@
-/*******************************************************
- * 
- * Copyright (C) 2019 Francesco Pham (pham.francesco@gmail.com)
- * 
- *******************************************************/
 #ifndef RESOURCEMANAGER_H
 #define RESOURCEMANAGER_H
 
 #include <map>
 #include <string>
 
-#include <GLES3/gl3.h>
+//#include <GLES3/gl3.h>
+#include <vitaGL.h>
 
 #include "JShader.h"
 #include "JTypes.h"

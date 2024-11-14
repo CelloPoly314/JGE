@@ -1,10 +1,4 @@
-/*******************************************************
- * 
- * Copyright (C) 2019 Francesco Pham (pham.francesco@gmail.com)
- * 
- *******************************************************/
-#ifndef _J_SPRITERENDERER_
-#define _J_SPRITERENDERER_
+#pragma once
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -52,5 +46,3 @@ private:
 	GLint colorLocation;
 	GLint flippedLocation;
 };
-
-#endif

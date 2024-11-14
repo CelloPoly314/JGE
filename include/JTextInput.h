@@ -1,8 +1,3 @@
-/*******************************************************
- * 
- * Copyright (C) 2019 Francesco Pham (pham.francesco@gmail.com)
- * 
- *******************************************************/
 #ifndef _J_TEXTINPUT_
 #define _J_TEXTINPUT_
 

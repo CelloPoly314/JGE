@@ -1,8 +1,3 @@
-/*******************************************************
- * 
- * Copyright (C) 2019 Francesco Pham (pham.francesco@gmail.com)
- * 
- *******************************************************/
 #ifndef SHADER_H
 #define SHADER_H
 
@@ -11,7 +6,8 @@
 #include <sstream>
 #include <iostream>
 
-#include <GLES3/gl3.h>
+//#include <GLES3/gl3.h>
+#include <vitaGL.h>
 #include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
 

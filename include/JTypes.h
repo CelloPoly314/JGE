@@ -1,9 +1,3 @@
-/*******************************************************
- * 
- * Copyright (C) 2019 Francesco Pham (pham.francesco@gmail.com)
- * Copyright (c) 2007 James Hui (a.k.a. Dr.Watson) <jhkhui@gmail.com>
- * 
- *******************************************************/
 #ifndef _JTYPES_H
 #define _JTYPES_H
 
@@ -34,7 +28,8 @@
 #define SCREEN_WIDTH_2			240.0f
 #define SCREEN_HEIGHT_2			136.0f
 
-#include <GLES3/gl3.h>
+//#include <GLES3/gl3.h>
+#include <vitaGL.h>
 
 typedef signed char s8;
 typedef signed short s16;
