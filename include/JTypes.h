@@ -28,8 +28,9 @@
 #define SCREEN_WIDTH_2			240.0f
 #define SCREEN_HEIGHT_2			136.0f
 
-//#include <GLES3/gl3.h>
 #include <vitaGL.h>
+
+#define GL_GLEXT_PROTOTYPES
 
 typedef signed char s8;
 typedef signed short s16;
@@ -156,7 +157,7 @@ public:
 	int mHeight;
 	int mTexWidth;
 	int mTexHeight;
-	GLuint mTexId;
+	GLuint mTexId = 0;
 };
 
 

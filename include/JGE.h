@@ -13,6 +13,8 @@ bool JGEGetButtonState(u32 button);
 bool JGEGetButtonClick(u32 button);
 u8 JGEGetAnalogX();
 u8 JGEGetAnalogY();
+s8 JGEGetAnalogRX();
+s8 JGEGetAnalogRY();
 void JGEGetMouseMovement(int *x, int *y);
 std::string JGEGetTextInput();
 
@@ -158,6 +160,9 @@ public:
 	/// @param delta - delta time in seconds
 	//////////////////////////////////////////////////////////////////////////
 	void SetDelta(float delta);
+
+	s8 GetAnalogRX();
+	s8 GetAnalogRY();
 
 protected:
 	JGE();

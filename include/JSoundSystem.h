@@ -5,9 +5,22 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#include <SDL2/SDL_mixer.h>
+// #include <SDL2/SDL_mixer_ext.h>
+// #include <SDL2/SDL.h>
+#include "../include/JFileSystem.h"
+
+#include <psp2/kernel/threadmgr.h>
+#include <psp2/types.h>
 
 #include "JTypes.h"
+
+#include <string>
+#include <map>
+#include <AL/al.h>
+#include <AL/alc.h>
+#include <AL/alext.h>
+#include <mpg123.h>
+#include <algorithm>
 
 
 //------------------------------------------------------------------------------------------------
@@ -16,6 +29,10 @@ class JMusic
 public:
 	JMusic();
 	~JMusic();
+
+	//Mix_Music* mTrack;
+	ALuint mBuffer;
+    ALuint mSource;
 };
 
 
@@ -26,135 +43,49 @@ public:
 	JSample();
 	~JSample();
 
-	int mVoice;
-	int mVolume;
-	int mPanning;
-	Mix_Chunk *mSample;
+	ALuint mBuffer;
+    ALuint mVoice;
+    int mVolume;
+    int mPanning;
 };
 
-
-//////////////////////////////////////////////////////////////////////////
-/// Sound engine for playing sound effects (WAV) and background 
-/// music (MP3).
-///
-//////////////////////////////////////////////////////////////////////////
-class JSoundSystem
-{
-
+class JSoundSystem {
 public:
+    static JSoundSystem* GetInstance();
+    static void Destroy();
 
-	//////////////////////////////////////////////////////////////////////////
-	/// Get the singleton instance
-	///
-	//////////////////////////////////////////////////////////////////////////
-	static JSoundSystem* GetInstance();
+    JMusic* LoadMusic(const char* fileName);
+    void PlayMusic(JMusic* music, bool looping);
+    void StopMusic(JMusic* music);
+    void ResumeMusic(JMusic* music);
 
-	static void Destroy();
-
-
-
-	//////////////////////////////////////////////////////////////////////////
-	/// Load music.
-	/// 
-	/// @note MP3 is the only supported format for the moment.
-	/// 
-	/// @param filename - Name of the music file.
-	/// 
-	//////////////////////////////////////////////////////////////////////////
-	JMusic *LoadMusic(const char *fileName);
-
-	//////////////////////////////////////////////////////////////////////////
-	/// Delete music from memory.
-	/// 
-	/// @param music - Music to be deleted.
-	/// 
-	//////////////////////////////////////////////////////////////////////////
-	//void FreeMusic(JMusic *music);
-
-	//////////////////////////////////////////////////////////////////////////
-	/// Play music.
-	/// 
-	/// @param music - Music to be played.
-	/// @param looping - Play the music in a loop.
-	/// 
-	//////////////////////////////////////////////////////////////////////////
-	void PlayMusic(JMusic *music, bool looping = false);
-
-	//////////////////////////////////////////////////////////////////////////
-	/// Stop playing.
-	/// 
-	/// @param music - Music to be stopped.
-	/// 
-	//////////////////////////////////////////////////////////////////////////
-	void StopMusic(JMusic *music);
-
-
-	//////////////////////////////////////////////////////////////////////////
-	/// Resume playing.
-	/// 
-	/// @param music - Music to be resumed.
-	/// 
-	//////////////////////////////////////////////////////////////////////////
-	void ResumeMusic(JMusic *music);
-
-	//////////////////////////////////////////////////////////////////////////
-	/// Load sound effect.
-	/// 
-	/// @note WAV sound effect only.
-	/// 
-	/// @param fileName - Sound effect for loading.
-	/// 
-	//////////////////////////////////////////////////////////////////////////
-	JSample *LoadSample(const char *fileName);
-
-	//////////////////////////////////////////////////////////////////////////
-	/// Delete sound effect from memory.
-	/// 
-	/// @param sample - Sound to be deleted.
-	/// 
-	//////////////////////////////////////////////////////////////////////////
-	//void FreeSample(JSample *sample);
-
-	//////////////////////////////////////////////////////////////////////////
-	/// Play sound effect.
-	/// 
-	/// @param sample - Sound for playing.
-	/// 
-	//////////////////////////////////////////////////////////////////////////
-	void PlaySample(JSample *sample);
-
-	//////////////////////////////////////////////////////////////////////////
-	/// Stop sound effect.
-	/// 
-	/// @param voice - voice of sample.
-	/// 
-	//////////////////////////////////////////////////////////////////////////
-	void StopSample(int voice);
-
-	//////////////////////////////////////////////////////////////////////////
-	/// Set volume for audio playback.
-	/// 
-	/// @param volume - New volume.
-	/// 
-	//////////////////////////////////////////////////////////////////////////
-	void SetVolume(int volume);
-
-protected:
-	JSoundSystem();
-	~JSoundSystem();
-	
-	void InitSoundSystem();
-	void DestroySoundSystem();
+    JSample* LoadSample(const char* fileName);
+    void PlaySample(JSample* sample);
+    void StopSample(int voice);
+    void SetVolume(int volume);
 
 private:
+    JSoundSystem();
+    ~JSoundSystem();
 
-	JMusic *mCurrentMusic;
+    void InitSoundSystem();
+    void DestroySoundSystem();
 
-	int mVolume;
-	int mChannel;
+    static JSoundSystem* mInstance;
 
-	static JSoundSystem* mInstance;
+    ALCdevice* mDevice;
+    ALCcontext* mContext;
 
+    int mVolume;
+    std::vector<ALuint> mSoundPool;
+    std::vector<ALuint> mPlayingSources;
+
+    void CreateInitialSoundPool(size_t poolSize);
+    ALuint GetAvailableSource();
+    void AddSourceToPool();
+    size_t mMaxSimultaneousPlaybacks;
+    std::vector<bool> mIsSourcePlaying;
+    std::vector<JSample*> mSamples;
 };
 
 #endif

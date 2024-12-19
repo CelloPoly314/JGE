@@ -110,7 +110,14 @@ void JLBFont::DrawString(const char *string, float x, float y, int align)
 	while (*p)
 	{
 		index = (*p - 32)+mBase;
-		mQuad->SetTextureRect(mXPos[index], mYPos[index], mCharWidth[index], mHeight);
+		//mQuad->SetTextureRect(mXPos[index], mYPos[index], mCharWidth[index], mHeight);
+		if (*p == 'w' || *p == 'z' || *p == 'K' || *p == '<') {
+            mQuad->SetTextureRect(mXPos[index], mYPos[index]+0.3, mCharWidth[index], mHeight);
+        }
+        else {
+            mQuad->SetTextureRect(mXPos[index], mYPos[index], mCharWidth[index], mHeight);
+        }
+
 		mRenderer->RenderQuad(mQuad, dx, dy, mRotation, mScale, mScale);
 		dx += (mCharWidth[index] + mTracking) * mScale;
 		p++;
@@ -137,8 +144,17 @@ void JLBFont::DrawShadowedString(const char *string, float x, float y, int align
 	while (*p)
 	{
 		index = (*p - 32)+mBase;
-		mShadowQuad->SetTextureRect(mXPos[index], mYPos[index], mCharWidth[index], mHeight);
-		mQuad->SetTextureRect(mXPos[index], mYPos[index], mCharWidth[index], mHeight);
+		//mShadowQuad->SetTextureRect(mXPos[index], mYPos[index], mCharWidth[index], mHeight);
+		//mQuad->SetTextureRect(mXPos[index], mYPos[index], mCharWidth[index], mHeight);
+
+		if (*p == 'w' || *p == 'z' || *p == 'K' || *p == '<') {
+			mShadowQuad->SetTextureRect(mXPos[index], mYPos[index]+0.3, mCharWidth[index], mHeight);
+            mQuad->SetTextureRect(mXPos[index], mYPos[index]+0.3, mCharWidth[index], mHeight);
+        }
+        else {
+			mShadowQuad->SetTextureRect(mXPos[index], mYPos[index], mCharWidth[index], mHeight);
+            mQuad->SetTextureRect(mXPos[index], mYPos[index], mCharWidth[index], mHeight);
+        }
 		mRenderer->RenderQuad(mShadowQuad, dx+1, dy+1, mRotation, mScale, mScale);
 		mRenderer->RenderQuad(mQuad, dx, dy, mRotation, mScale, mScale);
 		dx += (mCharWidth[index] + mTracking) * mScale;

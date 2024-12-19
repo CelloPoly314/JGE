@@ -4,11 +4,9 @@
 #include <map>
 #include <string>
 
-//#include <GLES3/gl3.h>
-#include <vitaGL.h>
-
 #include "JShader.h"
 #include "JTypes.h"
+#include <vitaGL.h>
 
 
 class JResourceManager

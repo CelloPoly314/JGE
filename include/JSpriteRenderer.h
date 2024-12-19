@@ -6,6 +6,7 @@
 
 #include "JShader.h"
 #include "JTypes.h"
+#include <vector>
 
 class JSprite{
 public:
@@ -29,8 +30,11 @@ public:
 	void DrawSprite(JSprite &sprite);
 private:
 	JShader shader;
-	GLuint quadVAO;
+	//GLuint quadVAO;
+	GLuint VAO, VBO, EBO;
 	void initRenderData();
+
+	std::vector<JSprite> mSpriteBatch;
 
 	//////////////////////////////////////////////////////////////////////////
 	/// Bind texture to be used for the rendering followed.

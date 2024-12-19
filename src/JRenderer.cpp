@@ -81,31 +81,34 @@ JRenderer* JRenderer::GetInstance()
 
 void JRenderer::InitRenderer()
 {
-	mCurrentTextureFilter = TEX_FILTER_NONE;
+    mCurrentTextureFilter = TEX_FILTER_NONE;
 
-	glEnable(GL_BLEND);
-	SetTexBlend(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    mCurrTexBlendSrc = BLEND_SRC_ALPHA;
+    mCurrTexBlendDest = BLEND_ONE_MINUS_SRC_ALPHA;
 
-	// Load shaders
-	JResourceManager::LoadShader("sprite.vert", "sprite.frag", nullptr, "sprite");
-	glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(SCREEN_WIDTH_F),
-		static_cast<GLfloat>(SCREEN_HEIGHT_F), 0.0f, -1.0f, 1.0f);
-	JShader spriteShader = JResourceManager::GetShader("sprite");
-	spriteShader.Use();
-	spriteShader.SetInteger("image", 0);
-	spriteShader.SetMatrix4("projection", projection);
+    // Load shaders
+    JResourceManager::LoadShader("sprite.vert", "sprite.frag", nullptr, "sprite");
+    glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(SCREEN_WIDTH_F),
+        static_cast<GLfloat>(SCREEN_HEIGHT_F), 0.0f, -1.0f, 1.0f);
+    JShader spriteShader = JResourceManager::GetShader("sprite");
+    spriteShader.Use();
+    spriteShader.SetInteger("image", 0);
+    spriteShader.SetMatrix4("projection", projection);
 
-	JResourceManager::LoadShader("simple.vert", "simple.frag", nullptr, "simple");
-	JShader simpleShader = JResourceManager::GetShader("simple");
-	simpleShader.Use();
-	simpleShader.SetMatrix4("projection", projection);
-	colorUniformLoc = glGetUniformLocation(simpleShader.Program, "color");
+    JResourceManager::LoadShader("simple.vert", "simple.frag", nullptr, "simple");
+    JShader simpleShader = JResourceManager::GetShader("simple");
+    simpleShader.Use();
+    simpleShader.SetMatrix4("projection", projection);
+    colorUniformLoc = glGetUniformLocation(simpleShader.Program, "color");
 
-	// Load sprite renderer
-	mSpriteRenderer = new JSpriteRenderer(spriteShader);
+    // Load sprite renderer
+    mSpriteRenderer = new JSpriteRenderer(spriteShader);
 
-	// Load Vertex Array Object
-	JRenderer::InitVAO();
+    // Load Vertex Buffer Object
+    JRenderer::InitVBO();
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void JRenderer::Destroy()
@@ -127,30 +130,22 @@ JRenderer::~JRenderer()
 {
 }
 
-void JRenderer::InitVAO()
+void JRenderer::InitVBO()
 {
-	bufferSize = 360;
-	elementBufferSize = 360;
+    bufferSize = 360;
+    elementBufferSize = 360;
 
-	JShader shader = JResourceManager::GetShader("simple").Use();
+    JShader shader = JResourceManager::GetShader("simple").Use();
 
-	GLuint VBO, EBO;
-	glGenVertexArrays(1, &mVAO);
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
-	
-	glBindVertexArray(mVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glGenBuffers(1, &mVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, mVBO);
+    glBufferData(GL_ARRAY_BUFFER, bufferSize * sizeof(GLfloat), NULL, GL_DYNAMIC_DRAW);
 
-	glBufferData(GL_ARRAY_BUFFER, bufferSize * sizeof(GLfloat), NULL, GL_DYNAMIC_DRAW);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBufferSize * sizeof(GLuint), NULL, GL_DYNAMIC_DRAW);
+    GLint vertexLocation = glGetAttribLocation(shader.Program, "vertex");
+    glVertexAttribPointer(vertexLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
+    glEnableVertexAttribArray(vertexLocation);
 
-	GLint vertexLocation = glGetAttribLocation(shader.Program, "vertex");
-	glVertexAttribPointer(vertexLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(vertexLocation);
-
-	glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void JRenderer::DestroyRenderer()
@@ -259,56 +254,84 @@ void JRenderer::SetTexBlendDest(int dest)
 void JRenderer::Enable2D()
 {
 	glDisable (GL_DEPTH_TEST);
+	glEnable(GL_SCISSOR_TEST);
 }
 
 void JRenderer::RenderQuad(JQuad* quad, float xo, float yo, float angle, float xScale, float yScale)
 {
-	JSprite sprite;
+    static JSprite sprite;
 
-	sprite.texture = quad->mTex;
-	sprite.spriteRect = glm::vec4(quad->mX, quad->mY, quad->mWidth, quad->mHeight);
-	sprite.position = glm::vec2(xo, yo);
-	sprite.hotspot = glm::vec2(quad->mHotSpotX, quad->mHotSpotY);
-	sprite.scale = glm::vec2(xScale, yScale);
-	sprite.rotate = angle;
-	sprite.hFlipped = quad->mHFlipped;
-	sprite.vFlipped = quad->mVFlipped;
-	sprite.color = glm::vec4(quad->mColor.r, quad->mColor.g, quad->mColor.b, quad->mColor.a) / 255.f; // normalize to 0-1
-	sprite.textureFilter = mCurrentTextureFilter;
-	
-	mSpriteRenderer->DrawSprite(sprite);
+    const float colorNormalization = 1.0f / 255.0f;
+
+    sprite.texture = quad->mTex;
+    sprite.spriteRect = {quad->mX, quad->mY, quad->mWidth, quad->mHeight};
+    sprite.position = {xo, yo};
+    sprite.hotspot = {quad->mHotSpotX, quad->mHotSpotY};
+    sprite.scale = {xScale, yScale};
+    sprite.rotate = angle;
+    sprite.hFlipped = quad->mHFlipped;
+    sprite.vFlipped = quad->mVFlipped;
+    sprite.color = glm::vec4(quad->mColor.r, quad->mColor.g, quad->mColor.b, quad->mColor.a) * colorNormalization;
+    sprite.textureFilter = mCurrentTextureFilter;
+
+    mSpriteRenderer->DrawSprite(sprite);
 }
+
+// void JRenderer::RenderQuadBatch(JQuad* quad, float xo, float yo, float angle, float xScale, float yScale)
+// {
+//     static JSprite sprite;
+
+//     const float colorNormalization = 1.0f / 255.0f;
+
+//     sprite.texture = quad->mTex;
+//     sprite.spriteRect = {quad->mX, quad->mY, quad->mWidth, quad->mHeight};
+//     sprite.position = {xo, yo};
+//     sprite.hotspot = {quad->mHotSpotX, quad->mHotSpotY};
+//     sprite.scale = {xScale, yScale};
+//     sprite.rotate = angle;
+//     sprite.hFlipped = quad->mHFlipped;
+//     sprite.vFlipped = quad->mVFlipped;
+//     sprite.color = glm::vec4(quad->mColor.r, quad->mColor.g, quad->mColor.b, quad->mColor.a) * colorNormalization;
+//     sprite.textureFilter = mCurrentTextureFilter;
+
+//     //mSpriteRenderer->DrawSprite(sprite);
+// 	mSpriteBatch.push_back(sprite);
+// }
 
 void JRenderer::DrawPolygon(float* x, float* y, int count, PIXEL_TYPE color, GLenum mode)
 {
-	JShader shader = JResourceManager::GetShader("simple").Use();
+    JShader shader = JResourceManager::GetShader("simple").Use();
 
-	// vertices array
-	int buf_size = 2 * count; // 2 coordinates per vertex
-	GLfloat vertices[buf_size]; 
-	for(int i=0; i<count; i++)
-	{
-		vertices[2*i] = x[i];
-		vertices[2*i + 1] = y[i];
-	}
+    int buf_size = 2 * count; // 2 coordinates per vertex
+    GLfloat vertices[buf_size]; 
+    for (int i = 0; i < count; i++) {
+        vertices[2 * i] = x[i];
+        vertices[2 * i + 1] = y[i];
+    }
 
-	if(buf_size > bufferSize)
-		printf("Vertex buffer too small! \n");
+    if (buf_size > bufferSize) {
+        printf("Vertex buffer too small! \n");
+    }
 
-	//set color normalized to 0-1
-	JColor col;
-	col.color = color;
-	glUniform4f(colorUniformLoc, 
-				col.r / 255.f, 
-				col.g / 255.f, 
-				col.b / 255.f, 
-				col.a / 255.f);
-	
-	glBindVertexArray(mVAO);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-	glDrawArrays(mode, 0, count);
+    JColor col;
+    col.color = color;
+    glUniform4f(colorUniformLoc, 
+                col.r / 255.f, 
+                col.g / 255.f, 
+                col.b / 255.f, 
+                col.a / 255.f);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, mVBO);
+    glBufferData(GL_ARRAY_BUFFER, buf_size * sizeof(GLfloat), vertices, GL_DYNAMIC_DRAW);
+    
+    GLint vertexLocation = glGetAttribLocation(shader.Program, "vertex");
+    glEnableVertexAttribArray(vertexLocation);
+    glVertexAttribPointer(vertexLocation, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-	glBindVertexArray(0);
+    glDrawArrays(mode, 0, count);
+
+    glDisableVertexAttribArray(vertexLocation);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void JRenderer::DrawPolygon(float x, float y, float size, int count, float startingAngle, PIXEL_TYPE color, GLenum mode)
@@ -349,9 +372,30 @@ void JRenderer::DrawRect(float x, float y, float width, float height, PIXEL_TYPE
 
 void JRenderer::DrawLine(float x1, float y1, float x2, float y2, PIXEL_TYPE color)
 {
-	float vertices_x[] = {x1, x2};
-	float vertices_y[] = {y1, y2};
-	DrawPolygon(vertices_x, vertices_y, 2, color, GL_LINES);
+    GLfloat vertices[] = { x1, y1, x2, y2 };
+    glLineWidth(2.0f);
+
+    JShader shader = JResourceManager::GetShader("simple").Use();
+
+    JColor col;
+    col.color = color;
+    glUniform4f(colorUniformLoc, 
+                col.r / 255.f, 
+                col.g / 255.f, 
+                col.b / 255.f, 
+                col.a / 255.f);
+
+    glBindBuffer(GL_ARRAY_BUFFER, mVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+    
+    GLint vertexLocation = glGetAttribLocation(shader.Program, "vertex");
+    glEnableVertexAttribArray(vertexLocation);
+    glVertexAttribPointer(vertexLocation, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glDrawArrays(GL_LINES, 0, 2);
+
+    glDisableVertexAttribArray(vertexLocation);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void JRenderer::DrawLine(float x1, float y1, float x2, float y2, float lineWidth, PIXEL_TYPE color)
@@ -383,52 +427,38 @@ void JRenderer::DrawLine(float x1, float y1, float x2, float y2, float lineWidth
 
 void JRenderer::FillPolygon(float* x, float* y, int count, PIXEL_TYPE color, bool convex)
 {
-	if(convex)
-		DrawPolygon(x, y, count, color, GL_TRIANGLE_FAN);
-	else
-	{
-		JShader shader = JResourceManager::GetShader("simple").Use();
-		
-		// Poligon triangulation
-		using Point = std::array<float, 2>;
+    if (convex) {
+        JShader shader = JResourceManager::GetShader("simple").Use();
+        
+        int buf_size = 2 * count;
+        GLfloat vertices[buf_size]; 
+        for (int i = 0; i < count; i++) {
+            vertices[2 * i] = x[i];
+            vertices[2 * i + 1] = y[i];
+        }
 
-		std::vector<Point> polygon;
+        JColor col;
+        col.color = color;
+        glUniform4f(colorUniformLoc, 
+                    col.r / 255.f, 
+                    col.g / 255.f, 
+                    col.b / 255.f, 
+                    col.a / 255.f);
 
-		for(int i=0; i<count; i++)
-			polygon.push_back({x[i], y[i]});
+        glBindBuffer(GL_ARRAY_BUFFER, mVBO);
+        glBufferData(GL_ARRAY_BUFFER, buf_size * sizeof(GLfloat), vertices, GL_DYNAMIC_DRAW);
+        
+        GLint vertexLocation = glGetAttribLocation(shader.Program, "vertex");
+        glEnableVertexAttribArray(vertexLocation);
+        glVertexAttribPointer(vertexLocation, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-		std::vector<std::vector<Point>> v =  {polygon};
-		std::vector<GLint> indices = mapbox::earcut<GLint>(v);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, count);
 
-		// vertices array
-		int buf_size = 2 * count; // 2 coordinates per vertex
-		GLfloat vertices[buf_size]; 
-		for(int i=0; i<count; i++)
-		{
-			vertices[2*i] = x[i];
-			vertices[2*i + 1] = y[i];
-		}
-
-		if(buf_size > bufferSize)
-			printf("Vertex buffer too small!");
-
-		//set color normalized to 0-1
-		JColor col;
-		col.color = color;
-		glUniform4f(colorUniformLoc, 
-					col.r / 255.f, 
-					col.g / 255.f, 
-					col.b / 255.f, 
-					col.a / 255.f);
-		
-		glBindVertexArray(mVAO);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices.size()*sizeof(GLint), indices.data());
-
-		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-
-		glBindVertexArray(0);
-	}
+        glDisableVertexAttribArray(vertexLocation);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    } else {
+        std::cerr << "Non-convex polygon handling is not implemented in this version." << std::endl;
+    }
 }
 
 void JRenderer::FillPolygon(float x, float y, float size, int count, float startingAngle, PIXEL_TYPE color)

@@ -1,3 +1,14 @@
+//-------------------------------------------------------------------------------------
+//
+// JGE++ is a hardware accelerated 2D game SDK for PSP/Windows.
+//
+// Licensed under the BSD license, see LICENSE in JGE root for details.
+// 
+// Copyright (c) 2007 James Hui (a.k.a. Dr.Watson) <jhkhui@gmail.com>
+// 
+//-------------------------------------------------------------------------------------
+
+
 #ifndef _JGUI_H
 #define _JGUI_H
 
@@ -7,6 +18,7 @@
 
 #define JGUI_STYLE_LEFTRIGHT	0x01
 #define JGUI_STYLE_UPDOWN		0x02
+#define JGUI_STYLE_WRAPPING		0x04
 
 #define JGUI_INITIAL_DELAY		800
 #define JGUI_REPEAT_DELAY		100
@@ -38,6 +50,7 @@ public:
 
 	virtual void Entering();			// when focus is transferring to this obj
 	virtual bool Leaving(u32 key);		// when focus is transferring away from this obj, true to go ahead
+	virtual bool ButtonPressed();		// action button pressed, return false to ignore
 
 	int GetId();
 	bool HasFocus();
@@ -57,7 +70,7 @@ private:
 	u32	mActionButton;
 	int mCurr;
 	int mDefault;
-	bool mWrapping;
+	int mStyle;
 	int mDirection;
 	
 	int mBgX;
@@ -67,6 +80,7 @@ private:
 	Rect* mShadingBg;
 	
 	JGuiListener* mListener;
+	//int mKeyHoldTime;
 
 	bool KeyRepeated(u32 key, float dt);
 
@@ -84,30 +98,21 @@ public:
 	void Remove(int id);
 
 	void SetActionButton(u32 button);
-
-	// If wrapping is enabled then last object+1 = first object and first object-1 = last object
-	void SetWrapping(bool flag); 
+	void SetStyle(int style);
 	
-	// Get controller enabled flag
-	bool IsActive(); 
+	bool IsActive();
+	void SetActive(bool flag);
 
-	// Set controller enabled flag
-	void SetActive(bool flag); 
+	void Reset();
 
-	// SetCurr to default object
-	void Reset(); 
+	int GetCurr();
+	void SetCurr(int curr);
 
-	// Get current object with focus
-	int GetCurr(); 
-
-	// Enter object and set object with focus 
-	void SetCurr(int curr); 
-
-	// Get number of Objects
 	int GetCount();
 
-	// Get object by index
 	JGuiObject* GetGuiObject(int index);
+	//void SetImageBackground(const JTexture* tex, int x, int y);
+	//void SetShadingBackground(int x, int y, int width, int height, PIXEL_TYPE color);
 };
 
 

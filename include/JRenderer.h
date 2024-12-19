@@ -7,10 +7,13 @@
 #include <stdarg.h>
 #include <array>
 
+#include <vitaGL.h>
+
 #include "JTypes.h"
 #include "Vector2D.h"
 #include "JSpriteRenderer.h"
 #include "earcut.hpp" // https://github.com/mapbox/earcut.hpp
+#include <vector>
 
 #define SINF(x)		sinf(x*DEG2RAD)
 #define COSF(x)		cosf(x*DEG2RAD)
@@ -132,6 +135,7 @@ public:
 	///
 	//////////////////////////////////////////////////////////////////////////
 	void RenderQuad(JQuad* quad, float xo, float yo, float angle=0.0f, float xScale=1.0f, float yScale=1.0f);
+	void RenderQuadBatch(JQuad* quad, float xo, float yo, float angle=0.0f, float xScale=1.0f, float yScale=1.0f);
 
 	//////////////////////////////////////////////////////////////////////////
 	/// Draw polygon.
@@ -257,6 +261,25 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void FillCircle(float x, float y, float radius, PIXEL_TYPE color);
 
+	// void AddSprite(JSprite &sprite) {
+    //     mSpriteRenderer->AddSprite(sprite); // 调用 AddSprite 添加精灵
+    // }
+
+    // void Flush() {
+    //     mSpriteRenderer->Flush(); // 调用 Flush 执行渲染操作
+    // }
+
+	// void Clear() {
+    //     mSpriteRenderer->Clear(); // 调用 Flush 执行渲染操作
+    // }
+	// void AddToBatch(JSprite &sprite) {
+	// 	mSpriteRenderer->AddToBatch(sprite);
+	// }
+
+	// void Flush() {
+	// 	mSpriteRenderer->FlushBatch();
+	// }
+
 private:
 
 	static JRenderer* mInstance;
@@ -268,12 +291,13 @@ private:
 	int mCurrTexBlendSrc;
 	int mCurrTexBlendDest;
 
-	GLuint mVAO;
+	GLuint mVBO;
 	GLint colorUniformLoc; // location of color uniform on shader
 	int bufferSize;
 	int elementBufferSize;
 
-	void InitVAO();
+	void InitVBO();
+	std::vector<JSprite> mSpriteBatch;
 };
 
 

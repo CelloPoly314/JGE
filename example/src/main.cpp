@@ -1,8 +1,3 @@
-/*******************************************************
- * 
- * Copyright (C) 2019 Francesco Pham (pham.francesco@gmail.com)
- * 
- *******************************************************/
 #include <chrono>
 #include <stdio.h>
 #include <time.h>

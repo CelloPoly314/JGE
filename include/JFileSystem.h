@@ -58,6 +58,8 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void SetResourceRoot(const string& resourceRoot);
 
+    std::string GetResourceRoot() const;
+
 protected:
 	JFileSystem();
 	~JFileSystem();

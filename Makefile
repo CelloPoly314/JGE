@@ -10,10 +10,15 @@ HEADERS_DIR := include
 SOURCES := $(shell find $(SRC_DIR) -name "*.cpp")
 OBJECTS := $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SOURCES))
 
+CXXFLAGS += -DGLM_ENABLE_EXPERIMENTAL -DGL_GLEXT_PROTOTYPES #-mfloat-abi=softfp 
+#CFLAGS += -mfloat-abi=softfp
+#LDFLAGS += -mfloat-abi=softfp
+
+
 all: $(LIB_DIR)/$(TARGET)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@mkdir -p $(dir $@)  # 确保目录存在
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -I$(HEADERS_DIR) -o $@ -c $<
 
 $(LIB_DIR)/$(TARGET): $(OBJECTS)

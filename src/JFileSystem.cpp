@@ -38,7 +38,7 @@ JFileSystem::JFileSystem()
 	mPassword = NULL;
 	mFileSize = 0;
 
-	mResourceRoot = "";//"Res/";				// default root folder 
+	mResourceRoot = "";//"Res/";				// default root folder
 }
 
 
@@ -94,4 +94,9 @@ int JFileSystem::GetFileSize()
 void JFileSystem::SetResourceRoot(const string& resourceRoot)
 {
 	mResourceRoot = resourceRoot;
+}
+
+std::string JFileSystem::GetResourceRoot() const
+{
+    return mResourceRoot;
 }

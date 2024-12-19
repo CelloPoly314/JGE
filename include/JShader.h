@@ -6,10 +6,9 @@
 #include <sstream>
 #include <iostream>
 
-//#include <GLES3/gl3.h>
-#include <vitaGL.h>
 #include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
+#include <vitaGL.h>
 
 class JShader
 {

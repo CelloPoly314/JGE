@@ -84,6 +84,17 @@ u8 JGE::GetAnalogY()
 	return JGEGetAnalogY();
 }
 
+s8 JGE::GetAnalogRX()
+{
+	return JGEGetAnalogRX();
+}
+
+
+s8 JGE::GetAnalogRY()
+{
+	return JGEGetAnalogRY();
+}
+
 void JGE::GetMouseMovement(int *x, int *y)
 {
 	JGEGetMouseMovement(x, y);

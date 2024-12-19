@@ -1,8 +1,3 @@
-/*******************************************************
- * 
- * Copyright (C) 2019 Francesco Pham (pham.francesco@gmail.com)
- * 
- *******************************************************/
 #ifndef _GAMEAPP_H_
 #define _GAMEAPP_H_
 

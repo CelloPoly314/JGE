@@ -1,8 +1,3 @@
-/*******************************************************
- * 
- * Copyright (C) 2019 Francesco Pham (pham.francesco@gmail.com)
- * 
- *******************************************************/
 attribute vec2 vertex;
 
 uniform mat4 projection;
